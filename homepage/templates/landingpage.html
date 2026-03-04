@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Health Risk Detection & Intelligent Medical Triage System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap"
+    rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            olive: { DEFAULT: '#2F3E2C', light: '#3d5239', dark: '#1e2a1c', 50: '#f2f5f1' },
+            sage: { DEFAULT: '#A8BFA3', light: '#bccfb8', dark: '#8aa384', 50: '#f0f5ef' },
+            'sage-light': { DEFAULT: '#DCE7DA', soft: '#eaf0e8' },
+            neutral: { DEFAULT: '#F7F9F6', dark: '#eef1ec' },
+            charcoal: { DEFAULT: '#1E1E1E', light: '#2d2d2d', muted: '#4a4a4a', soft: '#6b6b6b' },
+          },
+          fontFamily: {
+            heading: ['Poppins', 'sans-serif'],
+            body: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'float-slow': 'float 9s ease-in-out infinite',
+            'float-fast': 'float 4s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4,0,0.6,1) infinite',
+            'spin-slow': 'spin 20s linear infinite',
+            'gradient': 'gradientShift 8s ease infinite',
+            'fade-up': 'fadeUp 0.7s ease forwards',
+            'fade-in': 'fadeIn 0.6s ease forwards',
+            'draw-line': 'drawLine 1.5s ease forwards',
+            'count-up': 'countUp 2s ease forwards',
+            'shimmer': 'shimmer 2.5s linear infinite',
+            'blob': 'blob 10s ease-in-out infinite',
+            'scale-in': 'scaleIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards',
+            'slide-right': 'slideRight 0.6s ease forwards',
+          },
+          keyframes: {
+            float: { '0%,100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-18px)' } },
+            gradientShift: { '0%,100%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' } },
+            fadeUp: { from: { opacity: '0', transform: 'translateY(30px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+            fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
+            drawLine: { from: { strokeDashoffset: '1000' }, to: { strokeDashoffset: '0' } },
+            shimmer: { '0%': { backgroundPosition: '-1000px 0' }, '100%': { backgroundPosition: '1000px 0' } },
+            blob: { '0%,100%': { borderRadius: '60% 40% 30% 70%/60% 30% 70% 40%' }, '50%': { borderRadius: '30% 60% 70% 40%/50% 60% 30% 60%' } },
+            scaleIn: { from: { opacity: '0', transform: 'scale(0.85)' }, to: { opacity: '1', transform: 'scale(1)' } },
+            slideRight: { from: { opacity: '0', transform: 'translateX(-30px)' }, to: { opacity: '1', transform: 'translateX(0)' } },
+          },
+          boxShadow: {
+            'glass': '0 8px 32px rgba(47,62,44,0.12), inset 0 1px 0 rgba(255,255,255,0.6)',
+            'card': '0 4px 24px rgba(47,62,44,0.08), 0 1px 4px rgba(47,62,44,0.04)',
+            'card-hover': '0 20px 60px rgba(47,62,44,0.18), 0 4px 16px rgba(47,62,44,0.08)',
+            'olive': '0 8px 30px rgba(47,62,44,0.35)',
+            'inner-glow': 'inset 0 1px 0 rgba(255,255,255,0.5)',
+          },
+          backgroundSize: { '300%': '300%' },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F7F9F6;
+      color: #1E1E1E;
+      overflow-x: hidden;
+    }
+
+    /* ── Custom scrollbar ── */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #F7F9F6;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #A8BFA3;
+      border-radius: 3px;
+    }
+
+    /* ── Grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.018;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    /* ── Fonts ── */
+    .font-heading {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .font-body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* ── Glassmorphism ── */
+    .glass {
+      background: rgba(247, 249, 246, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(168, 191, 163, 0.35);
+    }
+
+    .glass-dark {
+      background: rgba(47, 62, 44, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(168, 191, 163, 0.25);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(220, 231, 218, 0.7);
+      box-shadow: 0 8px 32px rgba(47, 62, 44, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    /* ── Hero canvas background ── */
+    #heroCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* ── Gradient text ── */
+    .gradient-text {
+      background: linear-gradient(135deg, #2F3E2C 0%, #5a7a54 45%, #A8BFA3 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gradient-text-light {
+      background: linear-gradient(135deg, #DCE7DA 0%, #A8BFA3 60%, #ffffff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Animated gradient background ── */
+    .bg-animate {
+      background: linear-gradient(-45deg, #F7F9F6, #eaf0e8, #dce7da, #c8d9c2, #a8bfa3);
+      background-size: 400% 400%;
+      animation: gradientShift 12s ease infinite;
+    }
+
+    .bg-animate-dark {
+      background: linear-gradient(-45deg, #2F3E2C, #3d5239, #4a6346, #2a3827, #1e2a1c);
+      background-size: 400% 400%;
+      animation: gradientShift 10s ease infinite;
+    }
+
+    /* ── Section reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal-left.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal-right.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.9);
+      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .reveal-scale.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Staggered children */
+    .stagger>* {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .stagger.visible>*:nth-child(1) {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0s;
+    }
+
+    .stagger.visible>*:nth-child(2) {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.1s;
+    }
+
+    .stagger.visible>*:nth-child(3) {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.2s;
+    }
+
+    .stagger.visible>*:nth-child(4) {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.3s;
+    }
+
+    .stagger.visible>*:nth-child(5) {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.4s;
+    }
+
+    .stagger.visible>*:nth-child(6) {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.5s;
+    }
+
+    .stagger.visible>*:nth-child(7) {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.6s;
+    }
+
+    .stagger.visible>*:nth-child(8) {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.7s;
+    }
+
+    .stagger.visible>*:nth-child(9) {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.8s;
+    }
+
+    /* ── Feature cards ── */
+    .feature-card {
+      background: rgba(255, 255, 255, 0.80);
+      border: 1px solid rgba(220, 231, 218, 0.8);
+      border-radius: 20px;
+      padding: 32px 28px;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 20px rgba(47, 62, 44, 0.06);
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(168, 191, 163, 0.08) 0%, rgba(47, 62, 44, 0.04) 100%);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.01);
+      box-shadow: 0 24px 60px rgba(47, 62, 44, 0.16), 0 4px 16px rgba(47, 62, 44, 0.08);
+      border-color: rgba(168, 191, 163, 0.6);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-card .icon-wrap {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #dce7da, #a8bfa3);
+      transition: all 0.4s;
+      box-shadow: 0 4px 12px rgba(47, 62, 44, 0.15);
+    }
+
+    .feature-card:hover .icon-wrap {
+      background: linear-gradient(135deg, #2F3E2C, #4a6346);
+      transform: rotate(-5deg) scale(1.1);
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      transition: all 0.4s ease;
+    }
+
+    .navbar.scrolled {
+      background: rgba(247, 249, 246, 0.92);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 1px 0 rgba(168, 191, 163, 0.3), 0 4px 20px rgba(47, 62, 44, 0.08);
+    }
+
+    /* ── Step connector ── */
+    .step-line {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      right: -50%;
+      height: 2px;
+      background: linear-gradient(90deg, #A8BFA3, #dce7da);
+      transform-origin: left;
+    }
+
+    /* ── Risk badge ── */
+    .risk-critical {
+      background: #fef2f2;
+      color: #ef4444;
+      border: 1px solid #fecaca;
+    }
+
+    .risk-high {
+      background: #fff7ed;
+      color: #f97316;
+      border: 1px solid #fed7aa;
+    }
+
+    .risk-moderate {
+      background: #fefce8;
+      color: #eab308;
+      border: 1px solid #fef08a;
+    }
+
+    .risk-low {
+      background: #f0fdf4;
+      color: #22c55e;
+      border: 1px solid #bbf7d0;
+    }
+
+    /* ── Score ring ── */
+    .score-ring {
+      transform: rotate(-90deg);
+    }
+
+    .score-ring-bg {
+      fill: none;
+      stroke: #dce7da;
+      stroke-width: 8;
+    }
+
+    .score-ring-fill {
+      fill: none;
+      stroke: #2F3E2C;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 251.2;
+      stroke-dashoffset: 251.2;
+      transition: stroke-dashoffset 2s cubic-bezier(0.34, 1, 0.64, 1);
+    }
+
+    /* ── Dashboard card ── */
+    .dashboard-card {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(220, 231, 218, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(47, 62, 44, 0.08);
+      backdrop-filter: blur(12px);
+    }
+
+    /* ── Trust badge ── */
+    .trust-badge {
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(220, 231, 218, 0.8);
+      border-radius: 16px;
+      padding: 24px 28px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 12px rgba(47, 62, 44, 0.06);
+    }
+
+    .trust-badge:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 36px rgba(47, 62, 44, 0.14);
+      border-color: rgba(168, 191, 163, 0.6);
+    }
+
+    /* ── Capability item ── */
+    .capability-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 18px 20px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(220, 231, 218, 0.6);
+      transition: all 0.3s;
+    }
+
+    .capability-item:hover {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(168, 191, 163, 0.5);
+      transform: translateX(6px);
+      box-shadow: 0 4px 16px rgba(47, 62, 44, 0.08);
+    }
+
+    /* ── Blob shapes ── */
+    .blob-shape {
+      position: absolute;
+      border-radius: 60% 40% 30% 70%/60% 30% 70% 40%;
+      animation: blob 12s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* ── Button styles ── */
+    .btn-primary {
+      background: linear-gradient(135deg, #2F3E2C 0%, #3d5239 100%);
+      color: white;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 20px rgba(47, 62, 44, 0.3);
+      position: relative;
+      overflow: hidden;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #3d5239, #5a7a54);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 12px 36px rgba(47, 62, 44, 0.38);
+    }
+
+    .btn-primary:hover::before {
+      opacity: 1;
+    }
+
+    .btn-primary span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-primary svg {
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-secondary {
+      background: rgba(220, 231, 218, 0.5);
+      color: #2F3E2C;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1.5px solid rgba(168, 191, 163, 0.6);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(168, 191, 163, 0.25);
+      border-color: #A8BFA3;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(47, 62, 44, 0.12);
+    }
+
+    /* ── Nav link ── */
+    .nav-link {
+      color: #4a4a4a;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-link:hover {
+      color: #2F3E2C;
+    }
+
+    /* ── Mobile menu ── */
+    #mobileMenu {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(247, 249, 246, 0.98);
+      backdrop-filter: blur(20px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+
+    #mobileMenu.open {
+      display: flex;
+    }
+
+    /* ── Marquee ── */
+    .marquee-wrap {
+      overflow: hidden;
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 24px;
+      width: max-content;
+      animation: marquee 30s linear infinite;
+    }
+
+    @keyframes marquee {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    /* ── Floating health icons (hero) ── */
+    .health-icon {
+      position: absolute;
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(220, 231, 218, 0.7);
+      box-shadow: 0 8px 24px rgba(47, 62, 44, 0.12);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    /* ── Stat counter ── */
+    .stat-number {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 2.8rem;
+      line-height: 1;
+      background: linear-gradient(135deg, #2F3E2C, #5a7a54);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(220, 231, 218, 0.7);
+      border: 1px solid rgba(168, 191, 163, 0.5);
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #2F3E2C;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.4rem !important;
+        line-height: 1.15 !important;
+      }
+
+      .step-line {
+        display: none;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-title {
+        font-size: 1.9rem !important;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        padding: 12px 24px;
+        font-size: 0.88rem;
+      }
+    }
+
+    /* ── Smooth number counting ── */
+    .counter-done {
+      transition: none !important;
+    }
+  </style>
+</head>
+
+<body class="relative">
+
+  <!-- ════════════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════════ -->
+  <nav class="navbar py-4 px-6 lg:px-12" id="navbar">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+
+      <!-- Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white text-lg font-bold"
+          style="background:linear-gradient(135deg,#2F3E2C,#5a7a54)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"
+              fill="white" />
+            <path d="M11 6h2v2h-2V6zm0 4h2v2h-2v-2z" fill="white" opacity="0" />
+          </svg>
+        </div>
+        <div>
+          <div class="font-heading font-bold text-sm leading-none" style="color:#2F3E2C">MediTriage<span
+              style="color:#A8BFA3">AI</span></div>
+          <div class="text-xs font-body mt-0.5" style="color:#6b6b6b">Health Risk Detection</div>
+        </div>
+      </div>
+
+      <!-- Desktop nav -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#features" class="nav-link font-body">Features</a>
+        <a href="#how-it-works" class="nav-link font-body">How It Works</a>
+        <a href="#dashboard" class="nav-link font-body">Dashboard</a>
+        <a href="#why-matters" class="nav-link font-body">Why It Matters</a>
+        <a href="#trust" class="nav-link font-body">Trust</a>
+      </div>
+
+      <!-- CTA -->
+      <div class="hidden md:flex items-center gap-3">
+        <button class="btn-secondary font-body text-sm py-2.5 px-5" onclick="window.location.href='/login'">
+          <span>Signin/Signup</span>
+        </button>
+        <button class="btn-primary font-body text-sm py-2.5 px-5"
+          onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">
+          <span>Start Analysis</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="white" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Hamburger -->
+      <button class="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5" id="menuBtn"
+        onclick="toggleMenu()">
+        <span class="w-6 h-0.5 rounded-full transition-all" style="background:#2F3E2C" id="bar1"></span>
+        <span class="w-6 h-0.5 rounded-full transition-all" style="background:#2F3E2C" id="bar2"></span>
+        <span class="w-4 h-0.5 rounded-full transition-all" style="background:#2F3E2C" id="bar3"></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div id="mobileMenu">
+    <button class="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full"
+      style="background:rgba(220,231,218,0.6)" onclick="toggleMenu()">✕</button>
+    <a href="#features" class="font-heading font-semibold text-2xl" style="color:#2F3E2C"
+      onclick="toggleMenu()">Features</a>
+    <a href="#how-it-works" class="font-heading font-semibold text-2xl" style="color:#2F3E2C" onclick="toggleMenu()">How
+      It Works</a>
+    <a href="#dashboard" class="font-heading font-semibold text-2xl" style="color:#2F3E2C"
+      onclick="toggleMenu()">Dashboard</a>
+    <a href="#why-matters" class="font-heading font-semibold text-2xl" style="color:#2F3E2C" onclick="toggleMenu()">Why
+      It Matters</a>
+    <button onclick="window.location.href='/dashboard'" class="btn-primary font-body mt-4" onclick="toggleMenu()"><span>Start Health Analysis</span></button>
+  </div>
+
+
+  <!-- ════════════════════════════════════════════
+     HERO SECTION
+════════════════════════════════════════════ -->
+  <section id="hero" class="relative min-h-screen flex items-center overflow-hidden"
+    style="background:linear-gradient(160deg,#F7F9F6 0%,#eaf0e8 30%,#dce7da 65%,#c8d9c2 100%)">
+
+    <!-- Canvas neural network -->
+    <canvas id="heroCanvas"></canvas>
+
+    <!-- Blob shapes -->
+    <div class="blob-shape w-96 h-96 opacity-20"
+      style="background:linear-gradient(135deg,#A8BFA3,#2F3E2C);top:-10%;right:-5%;animation-delay:0s"></div>
+    <div class="blob-shape w-64 h-64 opacity-15"
+      style="background:linear-gradient(135deg,#DCE7DA,#A8BFA3);bottom:10%;left:-5%;animation-delay:4s"></div>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 w-full pt-28 pb-16">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+        <!-- Left: Copy -->
+        <div class="space-y-8">
+          <div class="animate-fade-up" style="animation-delay:0.1s;opacity:0;animation-fill-mode:forwards">
+            <div class="section-label mb-6">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse-slow"></span>
+              AI-Powered Medical Intelligence
+            </div>
+            <h1 class="hero-title font-heading font-black leading-tight" style="font-size:3.5rem;color:#1E1E1E">
+              AI-Powered<br />
+              <span class="gradient-text">Early Health Risk</span><br />
+              Detection
+            </h1>
+          </div>
+
+          <p class="font-body text-xl leading-relaxed animate-fade-up"
+            style="color:#4a4a4a;animation-delay:0.25s;opacity:0;animation-fill-mode:forwards">
+            Understand your symptoms, predict potential health risks, and receive <strong
+              style="color:#2F3E2C">intelligent medical guidance</strong> instantly.
+          </p>
+
+          <p class="font-body leading-relaxed animate-fade-up"
+            style="color:#6b6b6b;max-width:480px;animation-delay:0.35s;opacity:0;animation-fill-mode:forwards">
+            An advanced AI medical triage assistant designed to analyze symptoms, predict possible diseases, calculate
+            risk severity, and guide users toward the right healthcare decisions.
+          </p>
+
+          <!-- Buttons -->
+          <div class="flex flex-wrap gap-4 animate-fade-up"
+            style="animation-delay:0.45s;opacity:0;animation-fill-mode:forwards">
+            <button class="btn-primary font-body"
+              onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">
+              <span>Start Health Analysis</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12h14M12 5l7 7-7 7" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </button>
+            <button class="btn-secondary font-body"
+              onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M8 5v14l11-7L8 5z" fill="#2F3E2C" />
+              </svg>
+              <span>Learn How It Works</span>
+            </button>
+          </div>
+
+          <!-- Stats row -->
+          <div class="flex flex-wrap gap-8 pt-4 animate-fade-up"
+            style="animation-delay:0.55s;opacity:0;animation-fill-mode:forwards">
+            <div>
+              <div class="stat-number" data-target="45">0</div>
+              <div class="font-body text-sm" style="color:#6b6b6b">Diseases Covered</div>
+            </div>
+            <div class="w-px h-12 self-center" style="background:rgba(168,191,163,0.5)"></div>
+            <div>
+              <div class="stat-number" data-target="98">0</div>
+              <div class="font-body text-sm" style="color:#6b6b6b">% Accuracy</div>
+            </div>
+            <div class="w-px h-12 self-center" style="background:rgba(168,191,163,0.5)"></div>
+            <div>
+              <div class="stat-number" data-target="3">0</div>
+              <div class="font-body text-sm" style="color:#6b6b6b">Languages</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Floating dashboard preview -->
+        <div class="relative flex items-center justify-center animate-fade-up"
+          style="animation-delay:0.4s;opacity:0;animation-fill-mode:forwards">
+
+          <!-- Main hero card -->
+          <div class="glass-card rounded-3xl p-6 w-full max-w-sm relative z-10 animate-float-slow">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                style="background:linear-gradient(135deg,#2F3E2C,#5a7a54)">
+                <span class="text-white text-sm">🩺</span>
+              </div>
+              <div>
+                <div class="font-heading font-semibold text-sm" style="color:#1E1E1E">Health Analysis</div>
+                <div class="text-xs font-body" style="color:#6b6b6b">Real-time AI Assessment</div>
+              </div>
+              <div class="ml-auto flex items-center gap-1.5">
+                <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                <span class="text-xs font-body" style="color:#6b6b6b">Live</span>
+              </div>
+            </div>
+
+            <!-- Symptom chips -->
+            <div class="mb-4">
+              <div class="text-xs font-body font-medium mb-2" style="color:#6b6b6b">DETECTED SYMPTOMS</div>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-3 py-1 rounded-full text-xs font-medium font-body"
+                  style="background:#dce7da;color:#2F3E2C">🌡️ Fever</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium font-body"
+                  style="background:#dce7da;color:#2F3E2C">😮 Cough</span>
+                <span class="px-3 py-1 rounded-full text-xs font-medium font-body"
+                  style="background:#fef2f2;color:#ef4444">💔 Chest Pain</span>
+              </div>
+            </div>
+
+            <!-- Risk score ring -->
+            <div class="flex items-center gap-4 mb-4 p-4 rounded-2xl" style="background:rgba(220,231,218,0.4)">
+              <div class="relative flex-shrink-0">
+                <svg width="72" height="72" class="score-ring" id="heroRing">
+                  <circle class="score-ring-bg" cx="36" cy="36" r="28" />
+                  <circle class="score-ring-fill" cx="36" cy="36" r="28" id="heroRingFill" style="stroke:#ef4444" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span class="font-heading font-bold text-lg leading-none" style="color:#1E1E1E">78</span>
+                  <span class="text-xs font-body" style="color:#6b6b6b">/100</span>
+                </div>
+              </div>
+              <div>
+                <div class="text-xs font-body mb-1" style="color:#6b6b6b">PREDICTED CONDITION</div>
+                <div class="font-heading font-bold" style="color:#1E1E1E">Pneumonia</div>
+                <div class="risk-critical text-xs font-medium px-2 py-0.5 rounded-full inline-block mt-1 font-body">⚠
+                  Critical Risk</div>
+              </div>
+            </div>
+
+            <!-- Recommendation -->
+            <div class="flex items-start gap-3 p-3 rounded-xl"
+              style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15)">
+              <span class="text-base mt-0.5">🚨</span>
+              <div>
+                <div class="text-xs font-heading font-semibold" style="color:#ef4444">Emergency Action Required</div>
+                <div class="text-xs font-body mt-0.5" style="color:#6b6b6b">Seek immediate medical attention at nearest
+                  hospital</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating icons -->
+          <div class="health-icon glass-card"
+            style="top:5%;left:2%;background:rgba(255,255,255,0.85);animation-delay:0s">💊</div>
+          <div class="health-icon glass-card"
+            style="top:15%;right:0%;background:rgba(255,255,255,0.85);animation-delay:1.5s">❤️</div>
+          <div class="health-icon glass-card"
+            style="bottom:20%;left:0%;background:rgba(255,255,255,0.85);animation-delay:3s">🫁</div>
+          <div class="health-icon glass-card"
+            style="bottom:5%;right:5%;background:rgba(255,255,255,0.85);animation-delay:2s">🧬</div>
+
+          <!-- Mini floating card top-right -->
+          <div class="glass-card absolute rounded-2xl p-3 text-sm"
+            style="top:-4%;right:-2%;max-width:160px;z-index:20;animation:float 7s ease-in-out infinite;animation-delay:1s">
+            <div class="flex items-center gap-2 mb-1.5">
+              <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center text-xs">✓</div>
+              <span class="font-body text-xs font-medium" style="color:#2F3E2C">AI Confidence</span>
+            </div>
+            <div class="font-heading font-bold text-lg" style="color:#2F3E2C">94.2%</div>
+            <div class="text-xs font-body" style="color:#6b6b6b">Disease match rate</div>
+          </div>
+
+          <!-- Mini floating card bottom-left -->
+          <div class="glass-card absolute rounded-2xl p-3"
+            style="bottom:-2%;left:-4%;z-index:20;animation:float 5s ease-in-out infinite;animation-delay:2.5s">
+            <div class="flex items-center gap-2">
+              <span>⚡</span>
+              <div>
+                <div class="font-body text-xs font-semibold" style="color:#2F3E2C">Instant Analysis</div>
+                <div class="font-body text-xs" style="color:#6b6b6b">&lt; 2 seconds</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-60">
+      <div class="font-body text-xs" style="color:#6b6b6b">Scroll to explore</div>
+      <div class="w-5 h-8 rounded-full border flex items-start justify-center pt-1.5"
+        style="border-color:rgba(168,191,163,0.6)">
+        <div class="w-1 h-2 rounded-full" style="background:#A8BFA3;animation:float 1.5s ease-in-out infinite"></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════
+     MARQUEE TRUST BAR
+════════════════════════════════════════════ -->
+  <section
+    style="background:rgba(220,231,218,0.4);border-top:1px solid rgba(168,191,163,0.3);border-bottom:1px solid rgba(168,191,163,0.3);padding:16px 0">
+    <div class="marquee-wrap">
+      <div class="marquee-track">
+        <!-- Duplicate for seamless loop -->
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🤖 AI-Driven Analysis</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🔒 Secure Data Handling</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🌐 Multi-Language Support</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🏥 Hospital Locator</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🎙️ Voice Symptom Input</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">⚡ Real-time Risk Scoring</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🧠 Explainable AI</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🌾 Rural Healthcare Support</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <!-- Repeat -->
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🤖 AI-Driven Analysis</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🔒 Secure Data Handling</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🌐 Multi-Language Support</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🏥 Hospital Locator</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">🎙️ Voice Symptom Input</div>
+        <div class="w-1 h-1 rounded-full" style="background:#A8BFA3;flex-shrink:0;margin:auto"></div>
+        <div class="flex items-center gap-3 px-6 font-body text-sm font-medium"
+          style="color:#4a4a4a;white-space:nowrap">⚡ Real-time Risk Scoring</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════
+     FEATURES SECTION
+════════════════════════════════════════════ -->
+  <section id="features" class="py-24 px-6 lg:px-12" style="background:#F7F9F6">
+    <div class="max-w-7xl mx-auto">
+
+      <div class="text-center mb-16 reveal">
+        <div class="section-label mx-auto mb-5">Core Features</div>
+        <h2 class="font-heading font-bold mb-4" style="font-size:2.6rem;color:#1E1E1E;line-height:1.2">
+          Everything You Need for<br /><span class="gradient-text">Intelligent Health Triage</span>
+        </h2>
+        <p class="font-body text-lg max-w-xl mx-auto" style="color:#6b6b6b">
+          A complete AI-powered health assessment ecosystem built for accuracy, speed, and accessibility.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger" id="featuresGrid">
+
+        <!-- Feature 1 -->
+        <div class="feature-card">
+          <div class="icon-wrap mb-4">🔍</div>
+          <h3 class="font-heading font-semibold text-lg mb-2" style="color:#1E1E1E">Symptom Detection</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Automatically detects and extracts symptoms
+            from natural language user input using advanced AI-powered NLP analysis.</p>
+          <div class="mt-4 flex items-center gap-1.5 text-xs font-body font-medium" style="color:#A8BFA3">
+            <span>NLP Powered</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card">
+          <div class="icon-wrap mb-4">🧬</div>
+          <h3 class="font-heading font-semibold text-lg mb-2" style="color:#1E1E1E">Disease Prediction</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Machine learning models predict possible
+            diseases based on multi-symptom pattern recognition across 45+ conditions.</p>
+          <div class="mt-4 flex items-center gap-1.5 text-xs font-body font-medium" style="color:#A8BFA3">
+            <span>ML Models</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card">
+          <div class="icon-wrap mb-4">📊</div>
+          <h3 class="font-heading font-semibold text-lg mb-2" style="color:#1E1E1E">Health Risk Scoring</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Generates a precise risk score from 0–100
+            to estimate health severity with confidence levels and trend indicators.</p>
+          <div class="mt-4 flex items-center gap-1.5 text-xs font-body font-medium" style="color:#A8BFA3">
+            <span>0–100 Scale</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card">
+          <div class="icon-wrap mb-4">🚦</div>
+          <h3 class="font-heading font-semibold text-lg mb-2" style="color:#1E1E1E">Severity Classification</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Categorizes health condition into Low,
+            Moderate, High, or Critical risk with clear visual indicators and guidance.</p>
+          <div class="mt-4 flex flex-wrap gap-1.5">
+            <span class="risk-low text-xs px-2 py-0.5 rounded-full font-body font-medium">Low</span>
+            <span class="risk-moderate text-xs px-2 py-0.5 rounded-full font-body font-medium">Moderate</span>
+            <span class="risk-high text-xs px-2 py-0.5 rounded-full font-body font-medium">High</span>
+            <span class="risk-critical text-xs px-2 py-0.5 rounded-full font-body font-medium">Critical</span>
+          </div>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card">
+          <div class="icon-wrap mb-4">💊</div>
+          <h3 class="font-heading font-semibold text-lg mb-2" style="color:#1E1E1E">Medical Recommendations</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Provides personalized, actionable
+            healthcare guidance ranging from self-care to emergency intervention based on risk level.</p>
+          <div class="mt-4 flex items-center gap-1.5 text-xs font-body font-medium" style="color:#A8BFA3">
+            <span>Personalized Guidance</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card" style="background:linear-gradient(135deg,rgba(47,62,44,0.96),rgba(61,82,57,0.96))">
+          <div class="icon-wrap mb-4" style="background:rgba(255,255,255,0.15)">🚨</div>
+          <h3 class="font-heading font-semibold text-lg mb-2" style="color:white">Emergency Alert Detection</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:rgba(220,231,218,0.8)">Identifies dangerous symptoms
+            instantly and triggers emergency recommendations with hospital locator and ambulance contacts.</p>
+          <div class="mt-4 flex items-center gap-1.5 text-xs font-body font-medium" style="color:#A8BFA3">
+            <span style="color:rgba(220,231,218,0.7)">24/7 Active</span>
+            <div class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"></div>
+          </div>
+        </div>
+
+        <!-- Feature 7 -->
+        <div class="feature-card">
+          <div class="icon-wrap mb-4">🎙️</div>
+          <h3 class="font-heading font-semibold text-lg mb-2" style="color:#1E1E1E">Voice Symptom Input</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Users can speak their symptoms in English,
+            Hindi, or Telugu using built-in voice recognition for hands-free interaction.</p>
+          <div class="mt-4 flex items-center gap-1.5 text-xs font-body font-medium" style="color:#A8BFA3">
+            <span>EN · HI · TE</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Feature 8 -->
+        <div class="feature-card">
+          <div class="icon-wrap mb-4">📋</div>
+          <h3 class="font-heading font-semibold text-lg mb-2" style="color:#1E1E1E">Health History Tracking</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Stores and visualizes previous health
+            analyses, risk scores, and predictions enabling trend monitoring over time.</p>
+          <div class="mt-4 flex items-center gap-1.5 text-xs font-body font-medium" style="color:#A8BFA3">
+            <span>Trend Analysis</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Feature 9 -->
+        <div class="feature-card">
+          <div class="icon-wrap mb-4">📍</div>
+          <h3 class="font-heading font-semibold text-lg mb-2" style="color:#1E1E1E">Hospital Locator</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Automatically finds and displays nearest
+            hospitals, clinics, and emergency services when serious conditions are detected.</p>
+          <div class="mt-4 flex items-center gap-1.5 text-xs font-body font-medium" style="color:#A8BFA3">
+            <span>GPS-Enabled</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════
+     HOW IT WORKS
+════════════════════════════════════════════ -->
+  <section id="how-it-works" class="py-24 px-6 lg:px-12" style="background:linear-gradient(160deg,#eaf0e8,#F7F9F6)">
+    <div class="max-w-7xl mx-auto">
+
+      <div class="text-center mb-16 reveal">
+        <div class="section-label mx-auto mb-5">The AI Pipeline</div>
+        <h2 class="font-heading font-bold mb-4" style="font-size:2.6rem;color:#1E1E1E;line-height:1.2">
+          How the <span class="gradient-text">AI Triage System</span><br />Works
+        </h2>
+        <p class="font-body text-lg max-w-lg mx-auto" style="color:#6b6b6b">
+          From symptom input to medical guidance in under 2 seconds — here's the intelligent pipeline.
+        </p>
+      </div>
+
+      <!-- Steps -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-6 stagger" id="stepsGrid">
+
+        <!-- Step 1 -->
+        <div class="relative flex flex-col items-center text-center">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-4 relative z-10 shadow-card"
+            style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">
+            ✏️
+            <div
+              class="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-heading font-bold text-white"
+              style="background:#2F3E2C">1</div>
+          </div>
+          <h3 class="font-heading font-semibold text-base mb-2" style="color:#1E1E1E">Enter Symptoms</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Users describe symptoms through text or
+            voice in their preferred language.</p>
+          <!-- Connector line (hidden on mobile) -->
+          <div class="hidden md:block absolute top-8 left-[60%] right-[-40%] h-0.5 z-0"
+            style="background:linear-gradient(90deg,#A8BFA3,#dce7da)"></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative flex flex-col items-center text-center">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-4 relative z-10 shadow-card"
+            style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">
+            🔍
+            <div
+              class="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-heading font-bold text-white"
+              style="background:#2F3E2C">2</div>
+          </div>
+          <h3 class="font-heading font-semibold text-base mb-2" style="color:#1E1E1E">AI Detection</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">NLP extracts and maps medical symptoms from
+            natural language input.</p>
+          <div class="hidden md:block absolute top-8 left-[60%] right-[-40%] h-0.5 z-0"
+            style="background:linear-gradient(90deg,#A8BFA3,#dce7da)"></div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative flex flex-col items-center text-center">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-4 relative z-10 shadow-card"
+            style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">
+            🧬
+            <div
+              class="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-heading font-bold text-white"
+              style="background:#2F3E2C">3</div>
+          </div>
+          <h3 class="font-heading font-semibold text-base mb-2" style="color:#1E1E1E">Disease Prediction</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">ML models analyze symptom patterns to
+            identify likely conditions.</p>
+          <div class="hidden md:block absolute top-8 left-[60%] right-[-40%] h-0.5 z-0"
+            style="background:linear-gradient(90deg,#A8BFA3,#dce7da)"></div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="relative flex flex-col items-center text-center">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-4 relative z-10 shadow-card"
+            style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">
+            📊
+            <div
+              class="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-heading font-bold text-white"
+              style="background:#2F3E2C">4</div>
+          </div>
+          <h3 class="font-heading font-semibold text-base mb-2" style="color:#1E1E1E">Risk Assessment</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">System calculates a 0–100 risk score and
+            classifies severity level.</p>
+          <div class="hidden md:block absolute top-8 left-[60%] right-[-40%] h-0.5 z-0"
+            style="background:linear-gradient(90deg,#A8BFA3,#dce7da)"></div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="relative flex flex-col items-center text-center">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl mb-4 relative z-10 shadow-card"
+            style="background:linear-gradient(135deg,#2F3E2C,#5a7a54)">
+            <span>💡</span>
+            <div
+              class="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-heading font-bold text-white"
+              style="background:#A8BFA3;color:#2F3E2C">5</div>
+          </div>
+          <h3 class="font-heading font-semibold text-base mb-2" style="color:#1E1E1E">Recommendation</h3>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Users receive tailored health guidance or
+            emergency alerts instantly.</p>
+        </div>
+      </div>
+
+      <!-- Pipeline visual bar -->
+      <div class="mt-14 reveal">
+        <div class="glass-card rounded-2xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+            <span class="font-body text-sm font-medium" style="color:#2F3E2C">Live AI Pipeline Processing</span>
+            <span class="ml-auto font-body text-xs" style="color:#6b6b6b">Average: 1.8s</span>
+          </div>
+          <div class="grid grid-cols-5 gap-2">
+            <div class="text-center">
+              <div class="h-1.5 rounded-full mb-2" style="background:#2F3E2C"></div>
+              <div class="font-body text-xs" style="color:#6b6b6b">Input</div>
+            </div>
+            <div class="text-center">
+              <div class="h-1.5 rounded-full mb-2" style="background:#4a6346"></div>
+              <div class="font-body text-xs" style="color:#6b6b6b">NLP</div>
+            </div>
+            <div class="text-center">
+              <div class="h-1.5 rounded-full mb-2" style="background:#7a9a70"></div>
+              <div class="font-body text-xs" style="color:#6b6b6b">ML Model</div>
+            </div>
+            <div class="text-center">
+              <div class="h-1.5 rounded-full mb-2" style="background:#A8BFA3"></div>
+              <div class="font-body text-xs" style="color:#6b6b6b">Scoring</div>
+            </div>
+            <div class="text-center">
+              <div class="h-1.5 rounded-full mb-2" style="background:#dce7da"></div>
+              <div class="font-body text-xs" style="color:#6b6b6b">Output</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════
+     AI DASHBOARD PREVIEW
+════════════════════════════════════════════ -->
+  <section id="dashboard" class="py-24 px-6 lg:px-12" style="background:#F7F9F6">
+    <div class="max-w-7xl mx-auto">
+
+      <div class="text-center mb-16 reveal">
+        <div class="section-label mx-auto mb-5">Dashboard Preview</div>
+        <h2 class="font-heading font-bold mb-4" style="font-size:2.6rem;color:#1E1E1E;line-height:1.2">
+          See the <span class="gradient-text">AI Analysis</span><br />in Action
+        </h2>
+        <p class="font-body text-lg max-w-lg mx-auto" style="color:#6b6b6b">
+          A clean, intuitive medical analytics interface that turns complex health data into clear, actionable insights.
+        </p>
+      </div>
+
+      <!-- Dashboard mockup -->
+      <div class="reveal-scale">
+        <div class="glass-card rounded-3xl overflow-hidden shadow-card-hover">
+
+          <!-- Browser bar -->
+          <div class="flex items-center gap-2 px-5 py-3 border-b"
+            style="background:rgba(220,231,218,0.4);border-color:rgba(168,191,163,0.3)">
+            <div class="w-3 h-3 rounded-full" style="background:#ff5f57"></div>
+            <div class="w-3 h-3 rounded-full" style="background:#ffbd2e"></div>
+            <div class="w-3 h-3 rounded-full" style="background:#28ca41"></div>
+            <div class="flex-1 mx-4">
+              <div class="rounded-full px-4 py-1 text-center font-body text-xs max-w-xs mx-auto"
+                style="background:rgba(220,231,218,0.7);color:#6b6b6b">
+                meditriage.ai/analysis
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard content -->
+          <div class="p-6 md:p-8" style="background:rgba(247,249,246,0.6)">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+              <!-- Left: Input & Symptoms -->
+              <div class="space-y-4">
+                <!-- Input card -->
+                <div class="dashboard-card p-4">
+                  <div class="font-heading font-semibold text-sm mb-3" style="color:#1E1E1E">Symptom Input</div>
+                  <div class="rounded-xl p-3 text-sm font-body leading-relaxed mb-3"
+                    style="background:#eaf0e8;color:#4a4a4a;border:1px solid rgba(168,191,163,0.4)">
+                    "I have been experiencing high fever, persistent cough, and sharp chest pain for 3 days..."
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="flex-1 btn-primary py-2 text-xs justify-center"><span>Analyze</span></button>
+                    <button class="w-10 h-8 rounded-xl flex items-center justify-center text-sm"
+                      style="background:#dce7da">🎙️</button>
+                  </div>
+                </div>
+
+                <!-- Detected symptoms -->
+                <div class="dashboard-card p-4">
+                  <div class="font-heading font-semibold text-sm mb-3" style="color:#1E1E1E">Detected Symptoms</div>
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-2 p-2 rounded-lg font-body text-sm" style="background:#dce7da">
+                      <span>🌡️</span><span style="color:#2F3E2C;font-weight:500">Fever</span>
+                      <span class="ml-auto text-xs risk-high px-2 py-0.5 rounded-full">High</span>
+                    </div>
+                    <div class="flex items-center gap-2 p-2 rounded-lg font-body text-sm" style="background:#dce7da">
+                      <span>😮</span><span style="color:#2F3E2C;font-weight:500">Cough</span>
+                      <span class="ml-auto text-xs risk-moderate px-2 py-0.5 rounded-full">Moderate</span>
+                    </div>
+                    <div class="flex items-center gap-2 p-2 rounded-lg font-body text-sm" style="background:#fef2f2">
+                      <span>💔</span><span style="color:#2F3E2C;font-weight:500">Chest Pain</span>
+                      <span class="ml-auto text-xs risk-critical px-2 py-0.5 rounded-full">Critical</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Center: Risk Score + Prediction -->
+              <div class="space-y-4">
+                <!-- Risk Score Circle -->
+                <div class="dashboard-card p-5 flex flex-col items-center text-center">
+                  <div class="font-heading font-semibold text-sm mb-4" style="color:#1E1E1E">Health Risk Score</div>
+                  <div class="relative mb-4">
+                    <svg width="120" height="120" class="score-ring" id="dashRing">
+                      <circle class="score-ring-bg" cx="60" cy="60" r="48" style="stroke-width:10" />
+                      <circle class="score-ring-fill" cx="60" cy="60" r="48" id="dashRingFill"
+                        style="stroke:#ef4444;stroke-width:10;stroke-dasharray:301.4;stroke-dashoffset:301.4" />
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                      <span class="font-heading font-black text-3xl" style="color:#1E1E1E" id="dashScore">78</span>
+                      <span class="font-body text-xs" style="color:#6b6b6b">/100</span>
+                    </div>
+                  </div>
+                  <div class="risk-critical px-4 py-1.5 rounded-full font-heading font-semibold text-sm mb-2">
+                    ⚠ Critical Risk Level
+                  </div>
+                  <div class="font-body text-xs" style="color:#6b6b6b">Confidence: 94.2%</div>
+                </div>
+
+                <!-- Prediction -->
+                <div class="dashboard-card p-4">
+                  <div class="font-heading font-semibold text-sm mb-3" style="color:#1E1E1E">AI Prediction</div>
+                  <div class="flex items-center gap-3 p-3 rounded-xl mb-3"
+                    style="background:linear-gradient(135deg,rgba(47,62,44,0.08),rgba(168,191,163,0.12))">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
+                      style="background:linear-gradient(135deg,#2F3E2C,#5a7a54)">🫁</div>
+                    <div>
+                      <div class="font-heading font-bold text-base" style="color:#1E1E1E">Pneumonia</div>
+                      <div class="font-body text-xs" style="color:#6b6b6b">Primary diagnosis</div>
+                    </div>
+                  </div>
+                  <div class="space-y-1.5">
+                    <div class="flex justify-between items-center font-body text-xs" style="color:#6b6b6b">
+                      <span>Pneumonia</span>
+                      <div class="flex items-center gap-2">
+                        <div class="w-20 h-1.5 rounded-full overflow-hidden" style="background:#dce7da">
+                          <div class="h-full rounded-full" style="background:#2F3E2C;width:78%"></div>
+                        </div>
+                        <span style="color:#2F3E2C;font-weight:600">78%</span>
+                      </div>
+                    </div>
+                    <div class="flex justify-between items-center font-body text-xs" style="color:#6b6b6b">
+                      <span>Bronchitis</span>
+                      <div class="flex items-center gap-2">
+                        <div class="w-20 h-1.5 rounded-full overflow-hidden" style="background:#dce7da">
+                          <div class="h-full rounded-full" style="background:#A8BFA3;width:15%"></div>
+                        </div>
+                        <span style="color:#A8BFA3;font-weight:600">15%</span>
+                      </div>
+                    </div>
+                    <div class="flex justify-between items-center font-body text-xs" style="color:#6b6b6b">
+                      <span>COVID-19</span>
+                      <div class="flex items-center gap-2">
+                        <div class="w-20 h-1.5 rounded-full overflow-hidden" style="background:#dce7da">
+                          <div class="h-full rounded-full" style="background:#dce7da;width:7%"></div>
+                        </div>
+                        <span style="color:#6b6b6b;font-weight:600">7%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Recommendation + Explainability -->
+              <div class="space-y-4">
+                <!-- Emergency recommendation -->
+                <div class="dashboard-card p-4"
+                  style="background:linear-gradient(135deg,rgba(239,68,68,0.06),rgba(239,68,68,0.02));border-color:rgba(239,68,68,0.2)">
+                  <div class="font-heading font-semibold text-sm mb-3" style="color:#1E1E1E">Recommendation</div>
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="text-2xl">🚨</span>
+                    <div>
+                      <div class="font-heading font-bold text-sm" style="color:#ef4444">Emergency Action</div>
+                      <div class="font-body text-xs" style="color:#6b6b6b">Immediate care required</div>
+                    </div>
+                  </div>
+                  <p class="font-body text-xs leading-relaxed mb-3" style="color:#4a4a4a">
+                    Seek immediate medical attention. Visit the nearest emergency room or call ambulance services (108)
+                    immediately.
+                  </p>
+                  <button class="w-full py-2 rounded-xl text-white text-xs font-heading font-semibold"
+                    style="background:linear-gradient(135deg,#ef4444,#dc2626)">
+                    🏥 Find Nearest Hospital
+                  </button>
+                </div>
+
+                <!-- AI Explanation -->
+                <div class="dashboard-card p-4">
+                  <div class="font-heading font-semibold text-sm mb-3" style="color:#1E1E1E">Why This Prediction?</div>
+                  <div class="space-y-2">
+                    <div class="flex items-start gap-2 p-2 rounded-lg font-body text-xs leading-relaxed"
+                      style="background:#eaf0e8;border-left:3px solid #2F3E2C">
+                      <span>🌡️</span><span style="color:#4a4a4a"><strong style="color:#2F3E2C">Fever</strong> —
+                        Suggests systemic bacterial or viral infection</span>
+                    </div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg font-body text-xs leading-relaxed"
+                      style="background:#eaf0e8;border-left:3px solid #4a6346">
+                      <span>💔</span><span style="color:#4a4a4a"><strong style="color:#2F3E2C">Chest Pain</strong> —
+                        Indicates possible pulmonary involvement</span>
+                    </div>
+                    <div class="flex items-start gap-2 p-2 rounded-lg font-body text-xs leading-relaxed"
+                      style="background:#eaf0e8;border-left:3px solid #7a9a70">
+                      <span>😮</span><span style="color:#4a4a4a"><strong style="color:#2F3E2C">Cough (3 days)</strong> —
+                        Duration suggests lower respiratory tract</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════
+     WHY THIS MATTERS
+════════════════════════════════════════════ -->
+  <section id="why-matters" class="py-24 px-6 lg:px-12 overflow-hidden"
+    style="background:linear-gradient(160deg,#eaf0e8 0%,#dce7da 100%)">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+        <!-- Left -->
+        <div class="reveal-left">
+          <div class="section-label mb-6">Impact & Purpose</div>
+          <h2 class="font-heading font-bold mb-6" style="font-size:2.4rem;color:#1E1E1E;line-height:1.2">
+            Why This System<br /><span class="gradient-text">Matters for Millions</span>
+          </h2>
+          <p class="font-body text-lg leading-relaxed mb-6" style="color:#4a4a4a">
+            Many people delay seeking medical help due to <strong>uncertainty about their symptoms</strong>. In rural
+            areas, limited access to healthcare professionals makes this even more critical.
+          </p>
+          <p class="font-body leading-relaxed mb-8" style="color:#6b6b6b">
+            Our AI triage system bridges the gap by helping users understand potential health risks early, enabling
+            faster decisions and dramatically improving healthcare accessibility — especially in underserved
+            communities.
+          </p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div class="trust-badge" style="background:rgba(255,255,255,0.7)">
+              <div class="text-2xl mb-2">🌾</div>
+              <div class="font-heading font-semibold text-sm mb-1" style="color:#1E1E1E">Rural Healthcare</div>
+              <div class="font-body text-xs" style="color:#6b6b6b">Supporting 700M+ rural citizens with AI medical
+                access</div>
+            </div>
+            <div class="trust-badge" style="background:rgba(255,255,255,0.7)">
+              <div class="text-2xl mb-2">⚡</div>
+              <div class="font-heading font-semibold text-sm mb-1" style="color:#1E1E1E">Faster Decisions</div>
+              <div class="font-body text-xs" style="color:#6b6b6b">Reduce critical decision time from hours to seconds
+              </div>
+            </div>
+            <div class="trust-badge" style="background:rgba(255,255,255,0.7)">
+              <div class="text-2xl mb-2">🔬</div>
+              <div class="font-heading font-semibold text-sm mb-1" style="color:#1E1E1E">Early Detection</div>
+              <div class="font-body text-xs" style="color:#6b6b6b">Identify risk before conditions become
+                life-threatening</div>
+            </div>
+            <div class="trust-badge" style="background:rgba(255,255,255,0.7)">
+              <div class="text-2xl mb-2">🤖</div>
+              <div class="font-heading font-semibold text-sm mb-1" style="color:#1E1E1E">AI Assistance</div>
+              <div class="font-body text-xs" style="color:#6b6b6b">24/7 digital triage assistant available anywhere
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Impact stats -->
+        <div class="reveal-right">
+          <div class="space-y-5">
+
+            <div class="glass-card rounded-2xl p-6">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl"
+                  style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">😰</div>
+                <div>
+                  <div class="font-heading font-bold text-xl" style="color:#1E1E1E">67% of patients</div>
+                  <div class="font-body text-sm" style="color:#6b6b6b">delay seeking medical care due to symptom
+                    uncertainty</div>
+                </div>
+              </div>
+              <div class="w-full h-2 rounded-full overflow-hidden" style="background:#dce7da">
+                <div class="h-full rounded-full"
+                  style="background:linear-gradient(90deg,#ef4444,#f97316);width:67%;transition:width 2s ease"></div>
+              </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl"
+                  style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">🌾</div>
+                <div>
+                  <div class="font-heading font-bold text-xl" style="color:#1E1E1E">70% of India</div>
+                  <div class="font-body text-sm" style="color:#6b6b6b">lives in rural areas with limited healthcare
+                    access</div>
+                </div>
+              </div>
+              <div class="w-full h-2 rounded-full overflow-hidden" style="background:#dce7da">
+                <div class="h-full rounded-full"
+                  style="background:linear-gradient(90deg,#2F3E2C,#5a7a54);width:70%;transition:width 2s ease"></div>
+              </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl"
+                  style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">⚡</div>
+                <div>
+                  <div class="font-heading font-bold text-xl" style="color:#1E1E1E">85% reduction</div>
+                  <div class="font-body text-sm" style="color:#6b6b6b">in time-to-decision with AI-assisted triage</div>
+                </div>
+              </div>
+              <div class="w-full h-2 rounded-full overflow-hidden" style="background:#dce7da">
+                <div class="h-full rounded-full"
+                  style="background:linear-gradient(90deg,#A8BFA3,#dce7da);width:85%;transition:width 2s ease"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════
+     ADVANCED AI CAPABILITIES
+════════════════════════════════════════════ -->
+  <section id="capabilities" class="py-24 px-6 lg:px-12" style="background:#F7F9F6">
+    <div class="max-w-7xl mx-auto">
+
+      <div class="grid lg:grid-cols-2 gap-16 items-start">
+
+        <!-- Left: heading -->
+        <div class="reveal-left">
+          <div class="section-label mb-6">Advanced AI</div>
+          <h2 class="font-heading font-bold mb-6" style="font-size:2.4rem;color:#1E1E1E;line-height:1.2">
+            Cutting-Edge<br /><span class="gradient-text">AI Capabilities</span>
+          </h2>
+          <p class="font-body text-lg leading-relaxed mb-8" style="color:#6b6b6b">
+            Built with state-of-the-art machine learning, natural language processing, and explainable AI — designed for
+            real-world healthcare environments.
+          </p>
+
+          <!-- Big feature highlight -->
+          <div class="glass-card rounded-2xl p-6"
+            style="background:linear-gradient(135deg,rgba(47,62,44,0.96),rgba(61,82,57,0.96))">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center"
+                style="background:rgba(255,255,255,0.15)">🧠</div>
+              <div>
+                <div class="font-heading font-semibold text-sm text-white">Explainable AI (XAI)</div>
+                <div class="font-body text-xs" style="color:rgba(220,231,218,0.7)">Transparent predictions</div>
+              </div>
+            </div>
+            <p class="font-body text-sm leading-relaxed" style="color:rgba(220,231,218,0.8)">
+              Every prediction comes with a clear explanation of which symptoms contributed to the diagnosis and why —
+              building trust through transparency.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="px-3 py-1 rounded-full text-xs font-body font-medium"
+                style="background:rgba(255,255,255,0.12);color:rgba(220,231,218,0.9)">Feature Attribution</span>
+              <span class="px-3 py-1 rounded-full text-xs font-body font-medium"
+                style="background:rgba(255,255,255,0.12);color:rgba(220,231,218,0.9)">Confidence Scoring</span>
+              <span class="px-3 py-1 rounded-full text-xs font-body font-medium"
+                style="background:rgba(255,255,255,0.12);color:rgba(220,231,218,0.9)">Differential Diagnosis</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: capability list -->
+        <div class="space-y-3 reveal-right stagger" id="capabilitiesGrid">
+          <div class="capability-item">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+              style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">🔎</div>
+            <div>
+              <div class="font-heading font-semibold text-sm mb-0.5" style="color:#1E1E1E">Explainable AI Predictions
+              </div>
+              <div class="font-body text-xs leading-relaxed" style="color:#6b6b6b">Every decision is backed by clear
+                symptom-to-diagnosis reasoning chains.</div>
+            </div>
+          </div>
+          <div class="capability-item">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+              style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">🔗</div>
+            <div>
+              <div class="font-heading font-semibold text-sm mb-0.5" style="color:#1E1E1E">Multi-Symptom Analysis</div>
+              <div class="font-body text-xs leading-relaxed" style="color:#6b6b6b">Analyzes complex symptom combinations
+                simultaneously for holistic assessment.</div>
+            </div>
+          </div>
+          <div class="capability-item">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+              style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">🎙️</div>
+            <div>
+              <div class="font-heading font-semibold text-sm mb-0.5" style="color:#1E1E1E">Voice-Based Input</div>
+              <div class="font-body text-xs leading-relaxed" style="color:#6b6b6b">Hands-free symptom entry with
+                multi-language voice recognition support.</div>
+            </div>
+          </div>
+          <div class="capability-item">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+              style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">📈</div>
+            <div>
+              <div class="font-heading font-semibold text-sm mb-0.5" style="color:#1E1E1E">Health Trend Monitoring</div>
+              <div class="font-body text-xs leading-relaxed" style="color:#6b6b6b">Track risk score changes and health
+                patterns over weeks and months.</div>
+            </div>
+          </div>
+          <div class="capability-item">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+              style="background:linear-gradient(135deg,#dce7da,#a8bfa3)">👤</div>
+            <div>
+              <div class="font-heading font-semibold text-sm mb-0.5" style="color:#1E1E1E">Personalized Recommendations
+              </div>
+              <div class="font-body text-xs leading-relaxed" style="color:#6b6b6b">Guidance tailored to age, gender,
+                duration, and pre-existing conditions.</div>
+            </div>
+          </div>
+          <div class="capability-item">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+              style="background:linear-gradient(135deg,#fef2f2,#fecaca)">🚨</div>
+            <div>
+              <div class="font-heading font-semibold text-sm mb-0.5" style="color:#1E1E1E">Emergency Detection</div>
+              <div class="font-body text-xs leading-relaxed" style="color:#6b6b6b">Instant recognition of
+                life-threatening symptoms with automated emergency alerts.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════
+     HEALTHCARE TRUST SECTION
+════════════════════════════════════════════ -->
+  <section id="trust" class="py-24 px-6 lg:px-12"
+    style="background:linear-gradient(160deg,#dce7da 0%,#eaf0e8 50%,#F7F9F6 100%)">
+    <div class="max-w-7xl mx-auto">
+
+      <div class="text-center mb-16 reveal">
+        <div class="section-label mx-auto mb-5">Built on Trust</div>
+        <h2 class="font-heading font-bold mb-4" style="font-size:2.6rem;color:#1E1E1E;line-height:1.2">
+          Healthcare You Can<br /><span class="gradient-text">Rely On</span>
+        </h2>
+        <p class="font-body text-lg max-w-lg mx-auto" style="color:#6b6b6b">
+          Every aspect of the system is designed with medical accuracy, data security, and patient trust as the
+          foundation.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 stagger" id="trustGrid">
+
+        <div class="trust-badge text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4"
+            style="background:linear-gradient(135deg,#dce7da,#a8bfa3);box-shadow:0 4px 16px rgba(47,62,44,0.15)">🤖
+          </div>
+          <div class="font-heading font-bold text-lg mb-2" style="color:#1E1E1E">AI-Driven Analysis</div>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">State-of-the-art machine learning models
+            trained on comprehensive medical datasets for high accuracy.</p>
+          <div class="mt-3 font-body text-xs font-medium" style="color:#A8BFA3">45+ Conditions · 98% Accuracy</div>
+        </div>
+
+        <div class="trust-badge text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4"
+            style="background:linear-gradient(135deg,#dce7da,#a8bfa3);box-shadow:0 4px 16px rgba(47,62,44,0.15)">📚
+          </div>
+          <div class="font-heading font-bold text-lg mb-2" style="color:#1E1E1E">Medical Knowledge Base</div>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Backed by structured medical knowledge
+            graphs, symptom dictionaries, and disease severity matrices.</p>
+          <div class="mt-3 font-body text-xs font-medium" style="color:#A8BFA3">Evidence-Based · Curated</div>
+        </div>
+
+        <div class="trust-badge text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4"
+            style="background:linear-gradient(135deg,#dce7da,#a8bfa3);box-shadow:0 4px 16px rgba(47,62,44,0.15)">🔒
+          </div>
+          <div class="font-heading font-bold text-lg mb-2" style="color:#1E1E1E">Secure Data Handling</div>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">End-to-end encrypted health data
+            processing. No personal data is stored or shared without consent.</p>
+          <div class="mt-3 font-body text-xs font-medium" style="color:#A8BFA3">E2E Encrypted · GDPR Ready</div>
+        </div>
+
+        <div class="trust-badge text-center">
+          <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4"
+            style="background:linear-gradient(135deg,#dce7da,#a8bfa3);box-shadow:0 4px 16px rgba(47,62,44,0.15)">🔄
+          </div>
+          <div class="font-heading font-bold text-lg mb-2" style="color:#1E1E1E">Continuous Learning</div>
+          <p class="font-body text-sm leading-relaxed" style="color:#6b6b6b">Models continuously improve through
+            federated learning — getting smarter while protecting privacy.</p>
+          <div class="mt-3 font-body text-xs font-medium" style="color:#A8BFA3">Self-Improving · Privacy-First</div>
+        </div>
+
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="mt-10 text-center reveal">
+        <div class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-body text-sm"
+          style="background:rgba(220,231,218,0.5);border:1px solid rgba(168,191,163,0.4);color:#6b6b6b">
+          <span>⚕️</span>
+          <span>This system provides AI-assisted guidance only. Always consult a qualified medical professional for
+            diagnosis and treatment.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════
+     CALL TO ACTION
+════════════════════════════════════════════ -->
+  <section id="cta" class="py-28 px-6 lg:px-12 relative overflow-hidden">
+
+    <!-- Dark olive gradient bg -->
+    <div class="absolute inset-0 bg-animate-dark"></div>
+    <div class="blob-shape w-80 h-80 opacity-20 absolute"
+      style="background:linear-gradient(135deg,#A8BFA3,#2F3E2C);top:-20%;right:0%;animation-delay:0s"></div>
+    <div class="blob-shape w-64 h-64 opacity-15 absolute"
+      style="background:linear-gradient(135deg,#DCE7DA,#A8BFA3);bottom:-10%;left:-5%;animation-delay:5s"></div>
+
+    <div class="max-w-4xl mx-auto text-center relative z-10">
+
+      <div class="reveal">
+        <div class="section-label mx-auto mb-6"
+          style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:rgba(220,231,218,0.9)">
+          Get Started Today
+        </div>
+        <h2 class="font-heading font-black mb-6" style="font-size:3rem;color:white;line-height:1.15">
+          Start Your Health Risk<br />
+          <span class="gradient-text-light">Analysis Today</span>
+        </h2>
+        <p class="font-body text-xl leading-relaxed mb-10 mx-auto max-w-xl" style="color:rgba(220,231,218,0.75)">
+          Use AI to better understand your symptoms and make informed healthcare decisions — instantly, accurately, and
+          securely.
+        </p>
+
+        <div class="flex flex-wrap gap-4 justify-center mb-14">
+          <button class="btn-primary font-body py-4 px-8 text-base"
+            style="background:linear-gradient(135deg,#DCE7DA,#A8BFA3);color:#2F3E2C;box-shadow:0 8px 30px rgba(220,231,218,0.3)"
+            onclick="window.location.href='/dashboard'">
+            <span>Start Health Check</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke="#2F3E2C" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
+          <button class="btn-secondary font-body py-4 px-8 text-base"
+            style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:white">
+            <span>Explore AI Features</span>
+          </button>
+        </div>
+
+        <!-- Mini trust row -->
+        <div class="flex flex-wrap justify-center gap-6">
+          <div class="flex items-center gap-2 font-body text-sm" style="color:rgba(220,231,218,0.7)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6L9 17l-5-5" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Free to use
+          </div>
+          <div class="flex items-center gap-2 font-body text-sm" style="color:rgba(220,231,218,0.7)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6L9 17l-5-5" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            No registration needed
+          </div>
+          <div class="flex items-center gap-2 font-body text-sm" style="color:rgba(220,231,218,0.7)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6L9 17l-5-5" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            Results in under 2 seconds
+          </div>
+          <div class="flex items-center gap-2 font-body text-sm" style="color:rgba(220,231,218,0.7)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6L9 17l-5-5" stroke="#A8BFA3" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+            3 languages supported
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+  <footer style="background:#1E1E1E;color:rgba(220,231,218,0.7)">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12 pt-16 pb-8">
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-10 mb-12">
+
+        <!-- Brand -->
+        <div class="md:col-span-2">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center"
+              style="background:linear-gradient(135deg,#2F3E2C,#5a7a54)">
+              <span class="text-white text-lg">🩺</span>
+            </div>
+            <div>
+              <div class="font-heading font-bold text-sm text-white">MediTriage<span style="color:#A8BFA3">AI</span>
+              </div>
+              <div class="font-body text-xs" style="color:rgba(168,191,163,0.6)">Health Risk Detection System</div>
+            </div>
+          </div>
+          <p class="font-body text-sm leading-relaxed mb-5" style="color:rgba(220,231,218,0.6);max-width:300px">
+            An AI-powered early health risk detection and intelligent medical triage system designed to bridge
+            healthcare gaps in underserved communities.
+          </p>
+          <div class="flex gap-3">
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:scale-110"
+              style="background:rgba(168,191,163,0.15)">🐦</div>
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:scale-110"
+              style="background:rgba(168,191,163,0.15)">💼</div>
+            <div
+              class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:scale-110"
+              style="background:rgba(168,191,163,0.15)">📧</div>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div>
+          <div class="font-heading font-semibold text-sm text-white mb-4">About</div>
+          <div class="space-y-3 font-body text-sm">
+            <div class="cursor-pointer hover:text-white transition-colors">About the Project</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Our Mission</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Research Paper</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Team</div>
+          </div>
+        </div>
+
+        <!-- Features -->
+        <div>
+          <div class="font-heading font-semibold text-sm text-white mb-4">Features</div>
+          <div class="space-y-3 font-body text-sm">
+            <div class="cursor-pointer hover:text-white transition-colors">Symptom Detection</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Disease Prediction</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Risk Scoring</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Emergency Alerts</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Hospital Locator</div>
+          </div>
+        </div>
+
+        <!-- Legal -->
+        <div>
+          <div class="font-heading font-semibold text-sm text-white mb-4">Legal & Support</div>
+          <div class="space-y-3 font-body text-sm">
+            <div class="cursor-pointer hover:text-white transition-colors">Privacy Policy</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Terms of Use</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Medical Disclaimer</div>
+            <div class="cursor-pointer hover:text-white transition-colors">Contact Us</div>
+            <div class="cursor-pointer hover:text-white transition-colors">108 Emergency</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="border-t flex flex-col md:flex-row items-center justify-between gap-4 pt-6"
+        style="border-color:rgba(168,191,163,0.15)">
+        <div class="font-body text-xs" style="color:rgba(168,191,163,0.5)">
+          © 2025 MediTriage AI — AI Health Risk Detection & Intelligent Medical Triage System
+        </div>
+        <div class="flex items-center gap-2 font-body text-xs" style="color:rgba(168,191,163,0.5)">
+          <div class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></div>
+          All systems operational
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ════════════════════════════════════════════
+     VANILLA JS
+════════════════════════════════════════════ -->
+  <script>
+    // ── Navbar scroll ──────────────────────────────────────────────
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    // ── Mobile menu ──────────────────────────────────────────────
+    function toggleMenu() {
+      const menu = document.getElementById('mobileMenu');
+      menu.classList.toggle('open');
+      document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+    }
+
+    // ── Intersection Observer for reveals ─────────────────────────
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .stagger').forEach(el => {
+      revealObs.observe(el);
+    });
+
+    // ── Counter animation ─────────────────────────────────────────
+    function animateCounter(el, target, suffix = '') {
+      let current = 0;
+      const increment = target / 60;
+      const timer = setInterval(() => {
+        current = Math.min(current + increment, target);
+        el.textContent = Math.round(current) + suffix;
+        if (current >= target) clearInterval(timer);
+      }, 24);
+    }
+
+    // Trigger counters when hero is visible
+    const heroObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          document.querySelectorAll('[data-target]').forEach(el => {
+            animateCounter(el, parseInt(el.dataset.target));
+          });
+          heroObs.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+    heroObs.observe(document.getElementById('hero'));
+
+    // ── Score ring animations ──────────────────────────────────────
+    function animateRing(ringFillId, total, score, delay = 500) {
+      setTimeout(() => {
+        const el = document.getElementById(ringFillId);
+        if (!el) return;
+        const circumference = parseFloat(el.getAttribute('stroke-dasharray'));
+        const offset = circumference - (score / 100) * circumference;
+        el.style.strokeDashoffset = offset;
+      }, delay);
+    }
+
+    // Hero ring
+    const heroRingObs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        animateRing('heroRingFill', 251.2, 78, 800);
+        heroRingObs.disconnect();
+      }
+    }, { threshold: 0.5 });
+    heroRingObs.observe(document.getElementById('hero'));
+
+    // Dashboard ring
+    const dashRingObs = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        animateRing('dashRingFill', 301.4, 78, 400);
+        dashRingObs.disconnect();
+      }
+    }, { threshold: 0.5 });
+    dashRingObs.observe(document.getElementById('dashboard'));
+
+    // ── Canvas neural network (hero background) ────────────────────
+    (function () {
+      const canvas = document.getElementById('heroCanvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, nodes = [], animFrame;
+
+      const OLIVE = '47,62,44', SAGE = '168,191,163';
+
+      function resize() {
+        W = canvas.width = canvas.offsetWidth;
+        H = canvas.height = canvas.offsetHeight;
+      }
+
+      function createNodes(n) {
+        nodes = [];
+        for (let i = 0; i < n; i++) {
+          nodes.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: (Math.random() - 0.5) * 0.4,
+            r: Math.random() * 2.5 + 1,
+          });
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Draw connections
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[i].x - nodes[j].x;
+            const dy = nodes[i].y - nodes[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 140) {
+              const alpha = (1 - dist / 140) * 0.2;
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.strokeStyle = `rgba(${OLIVE},${alpha})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Draw nodes
+        nodes.forEach(n => {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${SAGE},0.45)`;
+          ctx.fill();
+
+          // Update position
+          n.x += n.vx;
+          n.y += n.vy;
+          if (n.x < 0 || n.x > W) n.vx *= -1;
+          if (n.y < 0 || n.y > H) n.vy *= -1;
+        });
+
+        animFrame = requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', () => {
+        resize();
+        createNodes(Math.floor(W * H / 14000));
+      });
+
+      resize();
+      createNodes(Math.floor(W * H / 14000));
+      draw();
+    })();
+
+    // ── Smooth anchor scrolling ────────────────────────────────────
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // ── Active nav highlight ───────────────────────────────────────
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        link.style.color = href === '#' + current ? '#2F3E2C' : '';
+        link.style.fontWeight = href === '#' + current ? '700' : '';
+      });
+    });
+  </script>
+
+
+</body>
+
+</html>

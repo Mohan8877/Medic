@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTriage AI — Patient Consultation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src='https://meet.jit.si/external_api.js'></script>
+    <style>
+        :root {
+            --bg: #E8F0EB;
+            --bg-deep: #DCE8DF;
+            --surface: #F5F8F5;
+            --surface-2: #EEF4EF;
+            --border: #C5D9CA;
+            --border-light: #D6E6D9;
+            --text-primary: #1A2B1E;
+            --text-secondary: #3D5C45;
+            --text-muted: #7A9982;
+            --accent: #2D6A4F;
+            --accent-light: #C8DDD0;
+            --accent-glow: rgba(45,106,79,0.14);
+            --accent-dark: #1B4332;
+            --accent-mid: #40916C;
+            --danger: #B91C1C;
+            --danger-bg: #FDF2F2;
+            --danger-border: #F5C0C0;
+            --danger-text: #7F1D1D;
+            --shadow-sm: 0 2px 8px rgba(26,43,30,0.07);
+            --shadow-md: 0 8px 24px rgba(26,43,30,0.09);
+            --shadow-lg: 0 16px 40px rgba(26,43,30,0.11);
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --radius-pill: 9999px;
+            --sidebar-w: 280px;
+            --font-display: 'Sora', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
+            --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body {
+            height: 100%;
+            background: var(--bg);
+            font-family: var(--font-body);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed; inset: 0;
+            background: rgba(10,20,14,0.35);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+        .sidebar-overlay.active { opacity: 1; pointer-events: all; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            z-index: 101;
+            transform: translateX(calc(-1 * var(--sidebar-w)));
+            transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column;
+            box-shadow: var(--shadow-lg);
+        }
+        .sidebar.open { transform: translateX(0); }
+
+        .sidebar-header {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .sidebar-logo {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #2D6A4F, #40916C);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 16px;
+        }
+        .sidebar-brand {
+            font-family: var(--font-display);
+            font-weight: 700; font-size: 16px;
+            color: var(--text-primary);
+        }
+        .sidebar-brand span { color: var(--accent); }
+
+        .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+        .sidebar-section-label {
+            font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em;
+            text-transform: uppercase; color: var(--text-muted);
+            padding: 8px 12px 6px;
+        }
+        .sidebar-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px; border-radius: var(--radius-sm);
+            color: var(--text-secondary); font-size: 14px; font-weight: 500;
+            cursor: pointer; transition: var(--transition); margin-bottom: 2px;
+            text-decoration: none;
+        }
+        .sidebar-item:hover, .sidebar-item.active {
+            background: var(--accent-light); color: var(--accent-dark);
+        }
+        .sidebar-item.active { font-weight: 600; }
+        .sidebar-item i { width: 18px; text-align: center; font-size: 15px; }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid var(--border-light);
+        }
+        .sidebar-user {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; border-radius: var(--radius-sm);
+            background: var(--surface-2); cursor: pointer;
+        }
+        .user-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, #2D6A4F, #52B788);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 13px; font-weight: 700;
+        }
+        .user-info { flex: 1; }
+        .user-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+        .user-role { font-size: 11px; color: var(--text-muted); }
+
+        /* Header */
+        .header {
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 64px;
+            background: rgba(232,240,235,0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-light);
+            display: flex; align-items: center;
+            padding: 0 24px; gap: 16px;
+            z-index: 50;
+        }
+        .hamburger {
+            width: 40px; height: 40px;
+            border: 1px solid var(--border);
+            background: var(--surface); border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: var(--transition);
+            color: var(--text-secondary); font-size: 15px; flex-shrink: 0;
+        }
+        .hamburger:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+
+        .header-brand {
+            font-family: var(--font-display);
+            font-weight: 800; font-size: 18px;
+            color: var(--text-primary); letter-spacing: -0.02em;
+        }
+        .header-brand span { color: var(--accent); }
+
+        .header-badge {
+            background: var(--accent-light); color: var(--accent-dark);
+            font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em;
+            text-transform: uppercase; padding: 4px 10px;
+            border-radius: var(--radius-pill); border: 1px solid rgba(45,106,79,0.3);
+        }
+
+        .header-spacer { flex: 1; }
+        .header-status {
+            display: flex; align-items: center; gap: 7px;
+            font-size: 12.5px; color: var(--text-secondary); font-weight: 500;
+        }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { box-shadow: 0 0 0 3px rgba(45,106,79,0.2); }
+            50% { box-shadow: 0 0 0 6px rgba(45,106,79,0.08); }
+        }
+
+        /* Main Layout */
+        .app-container {
+            padding-top: 64px;
+            height: 100vh;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1; overflow-y: auto; padding: 24px 24px 0;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+        .chat-area::-webkit-scrollbar { width: 4px; }
+        .chat-area::-webkit-scrollbar-track { background: transparent; }
+        .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .chat-inner { max-width: 800px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Session Info */
+        .session-info {
+            text-align: center; margin-bottom: 8px;
+        }
+        .session-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 16px;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            font-size: 12px; color: var(--text-secondary);
+            box-shadow: var(--shadow-sm);
+        }
+        .session-badge i { color: var(--accent); }
+
+        /* Message Rows */
+        .msg-row { display: flex; gap: 10px; animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) both; }
+        .msg-row.user { flex-direction: row-reverse; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .msg-bubble {
+            max-width: 70%; padding: 14px 18px;
+            border-radius: var(--radius-lg);
+            font-size: 14.5px; line-height: 1.6;
+        }
+        .msg-row.user .msg-bubble {
+            background: linear-gradient(135deg, #2D6A4F, #40916C);
+            color: #fff; border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 16px rgba(45,106,79,0.3);
+            font-weight: 500;
+        }
+        .msg-row.ai .msg-bubble {
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-bottom-left-radius: 6px;
+            box-shadow: var(--shadow-sm);
+            color: var(--text-primary);
+        }
+        .msg-avatar {
+            width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700;
+        }
+        .msg-row.user .msg-avatar {
+            background: linear-gradient(135deg, #2D6A4F, #52B788);
+            color: #fff;
+        }
+        .msg-row.ai .msg-avatar {
+            background: linear-gradient(135deg, #1C2B1E, #2D4A35);
+            color: #74C69D; font-size: 15px;
+        }
+
+        /* Risk Score Card */
+        .risk-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            animation: cardReveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        @keyframes cardReveal {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .risk-card-header {
+            background: linear-gradient(135deg, #0D1A10, #1B3A22);
+            padding: 16px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .risk-card-title {
+            font-family: var(--font-display);
+            font-weight: 600; font-size: 12px;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+        }
+        .risk-card-diagnosis {
+            font-family: var(--font-display);
+            font-weight: 700; font-size: 16px;
+            color: #fff;
+        }
+        .risk-card-score {
+            display: flex; align-items: center; gap: 10px;
+            padding: 16px 20px;
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border-light);
+        }
+        .risk-gauge {
+            width: 60px; height: 32px;
+            position: relative;
+        }
+        .risk-gauge svg {
+            width: 100%; height: 100%;
+            transform: rotate(-90deg);
+        }
+        .risk-gauge circle {
+            fill: none; stroke-width: 6; stroke-linecap: round;
+        }
+        .risk-gauge .track { stroke: var(--border); }
+        .risk-gauge .fill { 
+            stroke: #B91C1C;
+            stroke-dasharray: 94; stroke-dashoffset: 14;
+            transition: stroke-dashoffset 1s ease;
+        }
+        .risk-score-num {
+            font-family: var(--font-display);
+            font-weight: 900; font-size: 28px;
+            color: #B91C1C;
+        }
+        .risk-score-label {
+            font-size: 11px; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .risk-close {
+            width: 28px; height: 28px;
+            border-radius: 50%; border: none;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .risk-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+        /* Typing Indicator */
+        .typing-row { animation: slideIn 0.3s ease both; }
+        .typing-bubble {
+            padding: 14px 18px; background: var(--surface);
+            border: 1px solid var(--border-light); border-radius: var(--radius-lg);
+            border-bottom-left-radius: 6px; display: inline-flex;
+            align-items: center; gap: 6px; box-shadow: var(--shadow-sm);
+        }
+        .typing-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent-mid); opacity: 0.6;
+            animation: typing-bounce 1.2s ease-in-out infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing-bounce {
+            0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* Input Zone */
+        .input-zone {
+            padding: 16px 24px 20px;
+            background: rgba(232,240,235,0.94);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border-light);
+            box-shadow: 0 -8px 32px rgba(15,35,24,0.08);
+        }
+
+        .input-wrapper { max-width: 800px; margin: 0 auto; }
+
+        .input-bar {
+            display: flex; align-items: flex-end;
+            background: var(--surface); border: 1.5px solid var(--border);
+            border-radius: var(--radius-pill);
+            padding: 10px 10px 10px 20px;
+            gap: 10px; transition: var(--transition);
+            box-shadow: var(--shadow-md);
+        }
+        .input-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(45,106,79,0.12), var(--shadow-md);
+        }
+
+        .input-field {
+            flex: 1; border: none; background: transparent;
+            font-family: var(--font-body); font-size: 14.5px;
+            color: var(--text-primary); outline: none; resize: none;
+            line-height: 1.5; min-height: 24px; max-height: 120px;
+            overflow-y: auto; padding: 2px 0;
+        }
+        .input-field::placeholder { color: var(--text-muted); }
+
+        .input-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+        .input-btn {
+            width: 38px; height: 38px; border-radius: 50%; border: none;
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px;
+        }
+        .action-btn {
+            background: var(--surface-2); color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+        .action-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+
+        .send-btn {
+            background: linear-gradient(135deg, #2D6A4F, #40916C);
+            color: #fff; box-shadow: 0 4px 14px rgba(45,106,79,0.4);
+        }
+        .send-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(45,106,79,0.5); }
+        .send-btn:active { transform: scale(0.96); }
+
+        .input-hint {
+            text-align: center; font-size: 11.5px; color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        /* Action Buttons */
+        .action-bar {
+            display: flex; gap: 8px; flex-wrap: wrap;
+            margin-bottom: 12px;
+            justify-content: center;
+        }
+        .action-btn-premium {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: var(--transition);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-secondary);
+        }
+        .action-btn-premium:hover {
+            background: var(--accent-light); border-color: var(--accent);
+            color: var(--accent-dark); transform: translateY(-1px);
+        }
+        .action-btn-premium.end {
+            background: var(--danger-bg); border-color: var(--danger-border);
+            color: var(--danger-text);
+        }
+        .action-btn-premium.end:hover {
+            background: var(--danger); border-color: var(--danger);
+            color: #fff;
+        }
+
+        /* Floating Risk Button */
+        .floating-risk-btn {
+            position: fixed; bottom: 100px; right: 24px;
+            z-index: 60;
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 20px;
+            background: var(--surface);
+            border: 2px solid var(--accent);
+            border-radius: var(--radius-pill);
+            color: var(--accent-dark);
+            font-size: 12px; font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+        .floating-risk-btn:hover {
+            background: var(--accent-light); transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(45,106,79,0.25);
+        }
+
+        /* Jitsi Container */
+        #jitsi-container {
+            position: fixed; inset: 0;
+            z-index: 200;
+            background: #000;
+            display: none;
+        }
+        #jitsi-container.active { display: block; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; }
+            .header-brand { font-size: 16px; }
+            .header-badge { display: none; }
+            .action-bar { gap: 6px; }
+            .action-btn-premium { padding: 8px 12px; font-size: 12px; }
+            .msg-bubble { max-width: 85%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo"><i class="fa-solid fa-heart-pulse"></i></div>
+        <div class="sidebar-brand">Medi<span>Triage</span> AI</div>
+    </div>
+    <div class="sidebar-nav">
+        <div class="sidebar-section-label">Main</div>
+        <a class="sidebar-item" href="/"><i class="fa-solid fa-house-medical"></i> Dashboard</a>
+        <a class="sidebar-item"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+        <a class="sidebar-item"><i class="fa-solid fa-file-waveform"></i> Reports</a>
+        <a class="sidebar-item"><i class="fa-solid fa-bookmark"></i> Saved Cases</a>
+        <div class="sidebar-section-label" style="margin-top:12px;">Care</div>
+        <a class="sidebar-item"><i class="fa-solid fa-user-doctor"></i> My Doctors</a>
+        <a class="sidebar-item"><i class="fa-solid fa-hospital"></i> Nearby Hospitals</a>
+        <a class="sidebar-item"><i class="fa-solid fa-pills"></i> Medications</a>
+        <div class="sidebar-section-label" style="margin-top:12px;">System</div>
+        <a class="sidebar-item"><i class="fa-solid fa-gear"></i> Settings</a>
+        <a class="sidebar-item"><i class="fa-solid fa-circle-question"></i> Help & Support</a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="user-avatar">JD</div>
+            <div class="user-info">
+                <div class="user-name">Jamie Doe</div>
+                <div class="user-role">Patient Profile</div>
+            </div>
+            <i class="fa-solid fa-ellipsis" style="color:var(--text-muted);font-size:13px;"></i>
+        </div>
+    </div>
+</nav>
+
+<!-- Header -->
+<header class="header">
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="header-brand">Medi<span>Triage</span> AI</div>
+    <div class="header-badge">Patient Consultation</div>
+    <div class="header-spacer"></div>
+    <div class="header-status">
+        <div class="status-dot"></div>
+        Session Active
+    </div>
+</header>
+
+<!-- App Container -->
+<div class="app-container">
+
+    <!-- Action Bar -->
+    <div class="action-bar" style="padding: 16px 24px 0;">
+        <button class="action-btn-premium" onclick="onAudioCallClick()">
+            <i class="fa-solid fa-phone"></i> Audio Call
+        </button>
+        <button class="action-btn-premium" onclick="onVideoCallClick()">
+            <i class="fa-solid fa-video"></i> Video Call
+        </button>
+        <button class="action-btn-premium" onclick="onWhatsAppClick()">
+            <i class="fa-brands fa-whatsapp"></i> WhatsApp Bridge
+        </button>
+        <button class="action-btn-premium end" onclick="onEndSessionClick()">
+            <i class="fa-solid fa-phone-slash"></i> End Session
+        </button>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area" id="chatArea">
+        <div class="chat-inner" id="chatInner">
+            
+            <!-- Session Info -->
+            <div class="session-info">
+                <div class="session-badge">
+                    <i class="fa-solid fa-video"></i>
+                    Session Started at 10:42 AM • Dr. Sarah Singh
+                </div>
+            </div>
+
+            <!-- Initial Doctor Message -->
+            <div class="msg-row ai">
+                <div class="msg-avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                <div class="msg-bubble">
+                    Hello, John. I have reviewed your recent lab results. Could you tell me more about the fatigue you've been experiencing over the last 48 hours?
+                </div>
+            </div>
+
+            <!-- Patient Response -->
+            <div class="msg-row user">
+                <div class="msg-avatar">JD</div>
+                <div class="msg-bubble">
+                    Hi Doctor. Yes, it's mostly in the afternoons. I've also had a mild fever since yesterday morning and some joint pain.
+                </div>
+            </div>
+
+        </div>
+        <div class="chat-scroll-pad"></div>
+    </div>
+
+    <!-- Input Zone -->
+    <div class="input-zone">
+        <div class="input-wrapper">
+            <div class="input-bar">
+                <textarea class="input-field" id="chatInput" placeholder="Type your message..." rows="1"></textarea>
+                <div class="input-actions">
+                    <button class="input-btn action-btn" title="Attach file">
+                        <i class="fa-solid fa-paperclip"></i>
+                    </button>
+                    <button class="input-btn send-btn" id="sendBtn" onclick="handleSend()">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="input-hint">
+                <i class="fa-solid fa-shield-halved" style="color:var(--accent);margin-right:5px;"></i>
+                Information provided is not a definitive diagnosis.
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Risk Score Floating Button -->
+<button class="floating-risk-btn" onclick="toggleRiskCard()">
+    <i class="fa-solid fa-heart-pulse"></i>
+    View Risk Score
+</button>
+
+<!-- Risk Score Card -->
+<div class="risk-card" id="riskCard" style="display: none; position: fixed; top: 80px; right: 24px; z-index: 70;">
+    <div class="risk-card-header">
+        <div>
+            <div class="risk-card-title">Clinical Summary</div>
+            <div class="risk-card-diagnosis">Suspected Dengue</div>
+        </div>
+        <button class="risk-close" onclick="toggleRiskCard()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+    <div class="risk-card-score">
+        <div class="risk-gauge">
+            <svg viewBox="0 0 60 32">
+                <circle class="track" cx="30" cy="30" r="15"/>
+                <circle class="fill" cx="30" cy="30" r="15"/>
+            </svg>
+        </div>
+        <div>
+            <div class="risk-score-num">85</div>
+            <div class="risk-score-label">Risk Score</div>
+        </div>
+    </div>
+</div>
+
+<!-- Jitsi Container -->
+<div id="jitsi-container"></div>
+
+<script>
+    // System Variables passed from Flask
+    const ROOM_ID = "{{ room_id }}";
+    const ROLE = "patient";
+
+    // Initialize Socket.io
+    const socket = io();
+
+    // Join the specific consultation room immediately
+    socket.on('connect', () => {
+        socket.emit('join', { room: ROOM_ID });
+    });
+
+    // UI Functions (Sidebar, Textarea resize)
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('active'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('active'); }
+    function toggleRiskCard() { const card = document.getElementById('riskCard'); card.style.display = card.style.display === 'none' ? 'block' : 'none'; }
+    
+    const input = document.getElementById('chatInput');
+    input.addEventListener('input', () => { input.style.height = 'auto'; input.style.height = Math.min(input.scrollHeight, 120) + 'px'; });
+    input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
+
+    // Send Message to Server
+    function handleSend() {
+        const text = input.value.trim();
+        if (!text) return;
+        
+        // Emit to Python backend instead of just showing it locally
+        socket.emit('send_message', { room: ROOM_ID, sender: ROLE, text: text });
+        
+        input.value = '';
+        input.style.height = 'auto';
+    }
+
+    // Receive Message from Server
+    socket.on('receive_message', (data) => {
+        // If the sender is 'patient', it's my message. Otherwise, it's the doctor's.
+        const isMe = data.sender === ROLE;
+        appendMessage(data.text, isMe);
+    });
+
+    // Append Message to UI
+    function appendMessage(text, isMe) {
+        const inner = document.getElementById('chatInner');
+        const row = document.createElement('div');
+        
+        // Use your existing CSS classes
+        row.className = `msg-row ${isMe ? 'user' : 'ai'}`;
+        const avatarContent = isMe ? 'JD' : '<i class="fa-solid fa-user-doctor"></i>';
+        
+        row.innerHTML = `
+            <div class="msg-avatar">${avatarContent}</div>
+            <div class="msg-bubble">${escHtml(text)}</div>
+        `;
+        
+        inner.appendChild(row);
+        const c = document.getElementById('chatArea');
+        setTimeout(() => { c.scrollTop = c.scrollHeight; }, 60);
+    }
+
+    // Utility
+    function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // Placeholders for future phases
+    function onVideoCallClick() { alert("Video call implementation coming next."); }
+    function onAudioCallClick() { alert("Audio call implementation coming next."); }
+    function onWhatsAppClick() { alert("WhatsApp integration coming next."); }
+    function onEndSessionClick() { if(confirm("End session?")) window.location.href="/"; }
+</script>
+</body>
+</html>
